@@ -2,5 +2,12 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/dlib" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/face-similarity" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/face_recognition" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/facenet" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/facenet_distance" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/go-face-recognition-comparison" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/opencv_tutorial" vcs="Git" />
   </component>
 </project>

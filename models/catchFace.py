@@ -1,5 +1,6 @@
 import cv2 as cv
 import time
+import math
 
 # 检测人脸并绘制人脸bounding box
 def getFaceBox(net, frame, conf_threshold=0.7):
@@ -47,8 +48,8 @@ faceNet = cv.dnn.readNet(faceModel, faceProto)
 
 # 打开一个视频文件或一张图片或一个摄像头
 # 参数是0，表示打开笔记本的内置摄像头，参数是视频文件路径则打开视频
-cap = cv.VideoCapture('./test2.jpg')
-# cap = cv.VideoCapture(0)
+# cap = cv.VideoCapture('./xue.jpg')
+cap = cv.VideoCapture(0)
 
 padding = 20
 while cv.waitKey(1) < 0:
@@ -67,33 +68,34 @@ while cv.waitKey(1) < 0:
     if not bboxes:
         print("No face Detected, Checking next frame")
         continue
-
+    fileName = str(time.time())
     for bbox in bboxes:
         # print(bbox)   # 取出box框住的脸部进行检测,返回的是脸部图片
         face = frame[max(0, bbox[1] - padding):min(bbox[3] + padding, frame.shape[0] - 1),
                max(0, bbox[0] - padding):min(bbox[2] + padding, frame.shape[1] - 1)]
-        print("=======", type(face), face.shape)  #  <class 'numpy.ndarray'> (166, 154, 3)
-        #
+        # cv.imwrite('./catchImgs/' + fileName + "_face.png", face)
         blob = cv.dnn.blobFromImage(face, 1.0, (227, 227), MODEL_MEAN_VALUES, swapRB=False)
-        print("======", type(blob), blob.shape)  # <class 'numpy.ndarray'> (1, 3, 227, 227)
         genderNet.setInput(blob)   # blob输入网络进行性别的检测
         genderPreds = genderNet.forward()   # 性别检测进行前向传播
-        print("++++++", type(genderPreds), genderPreds.shape, genderPreds)   # <class 'numpy.ndarray'> (1, 2)  [[9.9999917e-01 8.6268375e-07]]  变化的值
         gender = genderList[genderPreds[0].argmax()]   # 分类  返回性别类型
-        # print("Gender Output : {}".format(genderPreds))
+        # 由于有一些女生性别判断不准，取值一下
+        # gender = genderList[math.ceil(genderPreds[0][1])]   # 分类  返回性别类型
+        print("*******************************")
+        print(genderPreds[0][1])
+        print(math.ceil(genderPreds[0][1]))
         print("Gender : {}, conf = {:.3f}".format(gender, genderPreds[0].max()))
 
         ageNet.setInput(blob)
         agePreds = ageNet.forward()
         age = ageList[agePreds[0].argmax()]
-        print(agePreds[0].argmax())  # 3
-        print("*********", agePreds[0])   #  [4.5557402e-07 1.9009208e-06 2.8783199e-04 9.9841607e-01 1.5261240e-04 1.0924522e-03 1.3928890e-05 3.4708322e-05]
-        print("Age Output : {}".format(agePreds))
+        print("*******************************")
         print("Age : {}, conf = {:.3f}".format(age, agePreds[0].max()))
 
         label = "{},{}".format(gender, age)
         cv.putText(frameFace, label, (bbox[0], bbox[1] - 10), cv.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2,
-                   cv.LINE_AA)  # putText(img, text, org, fontFace, fontScale, color[, thickness[, lineType[, bottomLeftOrigin]]]) -> img
+                   cv.LINE_AA)
         cv.imshow("Age Gender Demo", frameFace)
-    cv.imwrite( './catchImgs/' + str(time.time()) + ".png", frameFace, [int(cv.IMWRITE_PNG_COMPRESSION), 5])
+        cut = frameFace[bbox[1]:bbox[1] + bbox[3], bbox[0]:bbox[0] + bbox[2]]
+        # cv.imwrite('./catchImgs/' + fileName + "_cut.png", cut)
+    # cv.imwrite( './catchImgs/' + fileName + "_sceny.png", frameFace, [int(cv.IMWRITE_PNG_COMPRESSION), 5])
     print("time : {:.3f} ms".format(time.time() - t))
